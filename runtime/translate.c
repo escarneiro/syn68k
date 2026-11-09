@@ -533,6 +533,8 @@ generate_code (Block *b, TempBlockInfo *tbi, BOOL try_native_p)
   WRITE_LONG (&b->compiled_code[-PTR_WORDS], b->m68k_start_address);
 
 #ifdef GENERATE_NATIVE_CODE
+  make_executable ((char *) b->compiled_code, num_code_bytes);
+
   /* Now that the block's code is at a fixed address, patch up any
    * native->synthetic stubs so they do the right thing.
    */
@@ -1247,6 +1249,10 @@ make_artificial_block (Block *parent, syn68k_addr_t m68k_address,
   b->checksum = compute_block_checksum (b);
 
 #ifdef GENERATE_NATIVE_CODE
+  make_executable ((char *) code, ((NATIVE_START_BYTE_OFFSET
+				    / sizeof (uint16))
+				   + NATIVE_PREAMBLE_WORDS + extra_words)
+			          * sizeof (uint16));
   *(const void **)code = direct_dispatch_table[0x1];
   *(Block **)(code + sizeof (const void *)) = NULL;
   *extra_start = (uint16 *) ((char *)code

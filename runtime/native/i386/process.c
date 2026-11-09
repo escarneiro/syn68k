@@ -283,6 +283,24 @@ count_operands (const char *s)
 }
 
 
+/* Modern versions of gas refuse negative shift and rotate counts, so
+ * those templates need their 8-bit test values written as unsigned.
+ * The encoded immediate byte is the same either way.
+ */
+static boolean_t
+is_shift_template (const char *code)
+{
+  static const char *const shifts[] =
+    { "rcl", "rcr", "rol", "ror", "shl", "shr", "sar" };
+  unsigned i;
+
+  for (i = 0; i < sizeof shifts / sizeof shifts[0]; i++)
+    if (strncmp (code, shifts[i], 3) == 0)
+      return TRUE;
+  return FALSE;
+}
+
+
 #define MAX_VALUE_SET_ENTRIES 35
 
 typedef struct
@@ -390,6 +408,8 @@ create_asmdata (const template_t *t, int num_operands)
 	  v = value[op]->value[which[op]];
 	  if (t->operand[op].type == REGISTER)
 	    strcpy (buf, register_name[t->operand[op].size][v]);
+	  else if (t->operand[op].size == SIZE_8 && is_shift_template (t->code))
+	    sprintf (buf, "%ld", v & 0xFF);
 	  else
 	    sprintf (buf, "%ld", v);
 	  operand_replace (code[new_code], code[!new_code], op, buf, current);

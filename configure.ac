@@ -9,6 +9,12 @@ AC_CONFIG_HEADERS([include/config.h])
 # Checks for programs.
 AC_PROG_LIBTOOL
 AC_PROG_CC
+
+# This code predates C99 and depends on GNU89 semantics, notably "()" as an
+# unspecified parameter list and the GNU meaning of "extern inline".  Current
+# compilers default to a much newer dialect, where neither holds.
+CC="$CC -std=gnu89"
+
 AM_PROG_CC_C_O
 AM_PROG_AS
 
